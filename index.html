@@ -58,6 +58,12 @@
 		margin-bottom: 5px;
 		border-radius: 4px;
 	}
+	.winner {
+		font-size: 1.2em;
+		font-weight: bold;
+		color: #d35400;
+		margin: 5px 0;
+	}
 </style>
 </head>
 <body>
@@ -91,22 +97,7 @@ function saveParticipants() {
 	localStorage.setItem("participants", JSON.stringify(participants));
 	localStorage.setItem("drawHistory", JSON.stringify(history));
 	drawResult = null;
-	function editParticipant(index) {
-	const newName = prompt("새 이름을 입력하세요:", participants[index].name);
-	if (newName && newName.trim()) {
-		participants[index].name = newName.trim();
-		saveParticipants();
-	}
-}
-
-function deleteParticipant(index) {
-	if (confirm("정말 삭제하시겠습니까?")) {
-		participants.splice(index, 1);
-		saveParticipants();
-	}
-}
-
-displayParticipants();
+	displayParticipants();
 	updateWinnerCountOptions();
 }
 
@@ -132,6 +123,21 @@ function displayParticipants() {
 	});
 	updateWinnerCountOptions();
 	calculateProbabilities();
+}
+
+function editParticipant(index) {
+	const newName = prompt("새 이름을 입력하세요:", participants[index].name);
+	if (newName && newName.trim()) {
+		participants[index].name = newName.trim();
+		saveParticipants();
+	}
+}
+
+function deleteParticipant(index) {
+	if (confirm("정말 삭제하시겠습니까?")) {
+		participants.splice(index, 1);
+		saveParticipants();
+	}
 }
 
 function toggleCheck(index) {
@@ -193,12 +199,12 @@ function runDraw() {
 	}
 	drawResult.winners = selected;
 	playSound();
-	document.getElementById("result").innerHTML = selected.map(p => `당첨자: ${p.name}`).join("<br>");
+	document.getElementById("result").innerHTML = selected.map(p => `<div class="winner">🎉 ${p.name} 당첨!</div>`).join("");
 
 	drawResult.winners.forEach(w => {
 		const p = participants.find(p => p.name === w.name);
 		if (p) p.count++;
-		history.push({ name: w.name, time: new Date().toLocaleString() });
+		history.unshift({ name: w.name, time: new Date().toLocaleString() });
 	});
 	saveParticipants();
 	displayLog();
@@ -208,39 +214,11 @@ function runDraw() {
 function displayLog() {
 	const log = document.getElementById("log");
 	log.innerHTML = "";
-	history.forEach((entry, index) => {
+	history.forEach((entry) => {
 		const li = document.createElement("li");
-		li.innerHTML = `${entry.time} - ${entry.name} ` +
-			`<button onclick="deleteLog(${index})">삭제</button>` +
-			`<button onclick="editLog(${index})">수정</button>`;
+		li.textContent = `${entry.time} - ${entry.name}`;
 		log.appendChild(li);
 	});
-}
-
-function deleteLog(index) {
-	const removed = history.splice(index, 1)[0];
-	const p = participants.find(p => p.name === removed.name);
-	if (p) p.count = Math.max(0, p.count - 1);
-	saveParticipants();
-	displayLog();
-}
-
-function editLog(index) {
-	const newName = prompt("수정할 이름을 입력하세요:", history[index].name);
-	if (!newName) return;
-	const oldName = history[index].name;
-	history[index].name = newName;
-	const oldP = participants.find(p => p.name === oldName);
-	if (oldP) oldP.count = Math.max(0, oldP.count - 1);
-	let newP = participants.find(p => p.name === newName);
-	if (!newP) {
-		newP = { name: newName, count: 1, checked: true };
-		participants.push(newP);
-	} else {
-		newP.count++;
-	}
-	saveParticipants();
-	displayLog();
 }
 
 displayParticipants();
