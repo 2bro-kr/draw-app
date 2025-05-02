@@ -97,8 +97,8 @@
 <h3>기록</h3>
 <ul id="log"></ul>
 <script>
-let participants = JSON.parse(localStorage.getItem("participants")) || [];
-let history = JSON.parse(localStorage.getItem("drawHistory")) || [];
+let participants = localStorage.getItem("participants") ? JSON.parse(localStorage.getItem("participants")) : [];
+let history = localStorage.getItem("drawHistory") ? JSON.parse(localStorage.getItem("drawHistory")) : [];
 let drawResult = null;
 let winnerCount = 1;
 
@@ -131,8 +131,9 @@ function displayParticipants() {
 	participants.forEach((p, i) => {
 		const li = document.createElement("li");
 		const count = history.filter(h => h.name === p.name).length;
+		const count = history.filter(h => h.name === p.name).length;
 		li.innerHTML = `<input type="checkbox" ${p.checked ? "checked" : ""} onchange="toggleCheck(${i})"> 
-		<span onclick="editParticipant(${i})" style="cursor:pointer;">${p.name} (${count}회)</span>`;
+		<span onclick="editParticipant(${i})" style="cursor:pointer;">${p.name} (${count}회)</span>
 		<button onclick="deleteParticipant(${i})">삭제</button>`;
 		list.appendChild(li);
 	});
