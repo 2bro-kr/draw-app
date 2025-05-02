@@ -2,36 +2,39 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>가중치 기반 추첨기</title>
 <style>
 	body {
 		font-family: 'Segoe UI', sans-serif;
 		background-color: #f9f9f9;
-		padding: 20px;
-		max-width: 600px;
+		padding: 10px;
+		max-width: 100%;
 		margin: auto;
 		color: #333;
+		box-sizing: border-box;
 	}
 	h2, h3 {
 		color: #2c3e50;
+		margin: 10px 0;
 	}
 	input[type="text"] {
 		width: 60%;
 		padding: 8px;
-		margin-right: 10px;
+		margin: 5px 0;
 		border: 1px solid #ccc;
 		border-radius: 4px;
 	}
 	button {
-		margin: 5px 3px;
-		padding: 8px 15px;
+		margin: 5px 2px;
+		padding: 8px 12px;
 		border: none;
 		border-radius: 4px;
 		background-color: #3498db;
 		color: white;
 		cursor: pointer;
 		transition: background-color 0.3s ease;
+		font-size: 14px;
 	}
 	button:hover {
 		background-color: #2980b9;
@@ -42,27 +45,23 @@
 	}
 	li {
 		margin-bottom: 5px;
+		font-size: 14px;
 	}
 	label {
 		display: inline-block;
-		margin-bottom: 5px;
+		margin: 10px 0 5px 0;
 	}
 	select {
 		padding: 6px;
 		border-radius: 4px;
 		margin-left: 10px;
 	}
-	.bar {
-		height: 16px;
-		background-color: #3498db;
-		margin-bottom: 5px;
-		border-radius: 4px;
-	}
 	.winner {
-		font-size: 1.2em;
+		font-size: 1.4em;
 		font-weight: bold;
-		color: #d35400;
-		margin: 5px 0;
+		color: #e74c3c;
+		margin: 10px 0;
+		text-align: center;
 	}
 </style>
 </head>
@@ -159,7 +158,7 @@ function updateWinnerCountOptions() {
 }
 
 function isThreeTimeStreak(name) {
-	const recent = history.slice(-3).map(h => h.name);
+	const recent = history.slice(0, 3).map(h => h.name);
 	return recent.length === 3 && recent.every(n => n === name);
 }
 
@@ -214,12 +213,20 @@ function runDraw() {
 function displayLog() {
 	const log = document.getElementById("log");
 	log.innerHTML = "";
-	history.slice().forEach((entry) => {
+	history.forEach((entry, index) => {
 		const li = document.createElement("li");
 		li.textContent = `${entry.time} - ${entry.name}`;
+		li.innerHTML += ` <button onclick="deleteLog(${index})">삭제</button>`;
 		log.appendChild(li);
 	});
 }
+
+function deleteLog(index) {
+	if (confirm("정말 이 기록을 삭제하시겠습니까?")) {
+		history.splice(index, 1);
+		saveParticipants();
+		displayLog();
+	}
 }
 
 displayParticipants();
