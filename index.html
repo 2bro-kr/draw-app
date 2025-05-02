@@ -7,61 +7,73 @@
 <style>
 	body {
 		font-family: 'Segoe UI', sans-serif;
-		background-color: #f9f9f9;
-		padding: 10px;
-		max-width: 100%;
+		background: linear-gradient(to right, #fceabb, #f8b500);
+		padding: 15px;
+		max-width: 500px;
 		margin: auto;
 		color: #333;
 		box-sizing: border-box;
 	}
 	h2, h3 {
 		color: #2c3e50;
-		margin: 10px 0;
+		text-align: center;
 	}
 	input[type="text"] {
-		width: 60%;
-		padding: 8px;
+		width: 70%;
+		padding: 10px;
 		margin: 5px 0;
 		border: 1px solid #ccc;
-		border-radius: 4px;
+		border-radius: 8px;
+		font-size: 16px;
 	}
 	button {
-		margin: 5px 2px;
-		padding: 8px 12px;
+		margin: 5px;
+		padding: 10px 14px;
 		border: none;
-		border-radius: 4px;
-		background-color: #3498db;
+		border-radius: 8px;
+		background-color: #ff6f61;
 		color: white;
 		cursor: pointer;
-		transition: background-color 0.3s ease;
-		font-size: 14px;
+		font-size: 15px;
+		box-shadow: 1px 1px 4px rgba(0,0,0,0.2);
 	}
 	button:hover {
-		background-color: #2980b9;
+		background-color: #e95d4f;
+	}
+	.counter-control {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+		margin-bottom: 10px;
+	}
+	.counter-control button {
+		width: 40px;
+		height: 40px;
+		font-size: 20px;
 	}
 	ul {
 		list-style: none;
 		padding-left: 0;
 	}
 	li {
-		margin-bottom: 5px;
+		margin-bottom: 6px;
 		font-size: 14px;
 	}
 	label {
 		display: inline-block;
 		margin: 10px 0 5px 0;
-	}
-	select {
-		padding: 6px;
-		border-radius: 4px;
-		margin-left: 10px;
+		font-weight: bold;
 	}
 	.winner {
-		font-size: 1.4em;
+		font-size: 1.5em;
 		font-weight: bold;
-		color: #e74c3c;
+		color: #c0392b;
 		margin: 10px 0;
 		text-align: center;
+		background-color: #fcecec;
+		border-radius: 10px;
+		padding: 10px;
 	}
 </style>
 </head>
@@ -71,9 +83,11 @@
 <button onclick="addParticipant()">추가</button>
 <ul id="participantList"></ul>
 <hr>
-<label for="winnerCount">당첨자 수:</label>
-<select id="winnerCount"></select>
-<br>
+<div class="counter-control">
+	<button onclick="adjustWinnerCount(-1)">-</button>
+	<span id="winnerDisplay">1</span>명 당첨자
+	<button onclick="adjustWinnerCount(1)">+</button>
+</div>
 <button onclick="runDraw()">추첨 실행</button>
 <h3>확률</h3>
 <div id="probabilities"></div>
@@ -86,6 +100,7 @@
 let participants = JSON.parse(localStorage.getItem("participants")) || [];
 let history = JSON.parse(localStorage.getItem("drawHistory")) || [];
 let drawResult = null;
+let winnerCount = 1;
 
 function playSound() {
 	const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
@@ -97,14 +112,14 @@ function saveParticipants() {
 	localStorage.setItem("drawHistory", JSON.stringify(history));
 	drawResult = null;
 	displayParticipants();
-	updateWinnerCountOptions();
+	calculateProbabilities();
 }
 
 function addParticipant() {
 	const name = document.getElementById("nameInput").value.trim();
 	if (!name) return;
 	if (!participants.find(p => p.name === name)) {
-		participants.push({ name: name, count: 0, checked: true });
+		participants.push({ name: name, checked: true });
 		saveParticipants();
 	}
 	document.getElementById("nameInput").value = "";
@@ -116,11 +131,10 @@ function displayParticipants() {
 	participants.forEach((p, i) => {
 		const li = document.createElement("li");
 		li.innerHTML = `<input type="checkbox" ${p.checked ? "checked" : ""} onchange="toggleCheck(${i})"> 
-		<span onclick="editParticipant(${i})" style="cursor:pointer;">${p.name}</span> (당첨 ${p.count}회)
+		<span onclick="editParticipant(${i})" style="cursor:pointer;">${p.name}</span>
 		<button onclick="deleteParticipant(${i})">삭제</button>`;
 		list.appendChild(li);
 	});
-	updateWinnerCountOptions();
 	calculateProbabilities();
 }
 
@@ -145,44 +159,29 @@ function toggleCheck(index) {
 	calculateProbabilities();
 }
 
-function updateWinnerCountOptions() {
-	const select = document.getElementById("winnerCount");
+function adjustWinnerCount(delta) {
 	const activeCount = participants.filter(p => p.checked).length;
-	select.innerHTML = "";
-	for (let i = 1; i <= activeCount; i++) {
-		const opt = document.createElement("option");
-		opt.value = i;
-		opt.textContent = `${i}명`;
-		select.appendChild(opt);
-	}
-}
-
-function isThreeTimeStreak(name) {
-	const recent = history.slice(0, 3).map(h => h.name);
-	return recent.length === 3 && recent.every(n => n === name);
+	winnerCount = Math.max(1, Math.min(activeCount, winnerCount + delta));
+	document.getElementById("winnerDisplay").textContent = winnerCount;
 }
 
 function calculateProbabilities() {
 	const active = participants.filter(p => p.checked);
-	if (active.length === 0) return;
-	const filtered = active.filter(p => !isThreeTimeStreak(p.name));
-	let weights = filtered.map(p => 1 / Math.sqrt(1 + p.count));
+	const counts = active.map(p => history.filter(h => h.name === p.name).length);
+	let weights = active.map((p, i) => 1 / Math.sqrt(1 + counts[i]));
 	let total = weights.reduce((a, b) => a + b, 0);
-	let probs = filtered.map((p, i) => ({ name: p.name, prob: (weights[i] / total * 100).toFixed(2) }));
-	let display = probs.map(p => `${p.name}: ${p.prob}%`);
-	document.getElementById("probabilities").innerHTML = display.map(p => `<div>${p}</div>`).join("");
-	drawResult = { probs: probs, weights: weights, active: filtered };
-	document.getElementById("result").innerText = "";
+	let probs = active.map((p, i) => ({ name: p.name, prob: (weights[i] / total * 100).toFixed(2) }));
+	document.getElementById("probabilities").innerHTML = probs.map(p => `<div>${p.name}: ${p.prob}%</div>`).join("");
+	drawResult = { active: active, weights: weights };
 }
 
 function runDraw() {
 	calculateProbabilities();
 	if (!drawResult) return;
 	const { active, weights } = drawResult;
-	let count = parseInt(document.getElementById("winnerCount").value);
 	let selected = [];
 	let remaining = active.map((p, i) => ({ ...p, weight: weights[i] }));
-	for (let c = 0; c < count && remaining.length > 0; c++) {
+	for (let c = 0; c < winnerCount && remaining.length > 0; c++) {
 		let total = remaining.reduce((sum, p) => sum + p.weight, 0);
 		let r = Math.random() * total;
 		let acc = 0, index = -1;
@@ -196,18 +195,10 @@ function runDraw() {
 		}
 		remaining.splice(index, 1);
 	}
-	drawResult.winners = selected;
-	playSound();
 	document.getElementById("result").innerHTML = selected.map(p => `<div class="winner">🎉 ${p.name} 당첨!</div>`).join("");
-
-	drawResult.winners.forEach(w => {
-		const p = participants.find(p => p.name === w.name);
-		if (p) p.count++;
-		history.unshift({ name: w.name, time: new Date().toLocaleString() });
-	});
+	selected.forEach(w => history.unshift({ name: w.name, time: new Date().toLocaleString() }));
 	saveParticipants();
 	displayLog();
-	calculateProbabilities();
 }
 
 function displayLog() {
