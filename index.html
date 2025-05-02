@@ -214,11 +214,12 @@ function runDraw() {
 function displayLog() {
 	const log = document.getElementById("log");
 	log.innerHTML = "";
-	history.forEach((entry) => {
+	history.slice().forEach((entry) => {
 		const li = document.createElement("li");
 		li.textContent = `${entry.time} - ${entry.name}`;
 		log.appendChild(li);
 	});
+}
 }
 
 displayParticipants();
