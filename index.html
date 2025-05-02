@@ -70,8 +70,6 @@
 <select id="winnerCount"></select>
 <br>
 <button onclick="runDraw()">추첨 실행</button>
-<button id="saveResult" onclick="saveResult()" disabled>저장</button>
-<button id="resetDraw" onclick="resetDraw()" disabled>재추첨</button>
 <h3>확률</h3>
 <div id="probabilities"></div>
 <h3>결과</h3>
@@ -93,7 +91,22 @@ function saveParticipants() {
 	localStorage.setItem("participants", JSON.stringify(participants));
 	localStorage.setItem("drawHistory", JSON.stringify(history));
 	drawResult = null;
-	displayParticipants();
+	function editParticipant(index) {
+	const newName = prompt("새 이름을 입력하세요:", participants[index].name);
+	if (newName && newName.trim()) {
+		participants[index].name = newName.trim();
+		saveParticipants();
+	}
+}
+
+function deleteParticipant(index) {
+	if (confirm("정말 삭제하시겠습니까?")) {
+		participants.splice(index, 1);
+		saveParticipants();
+	}
+}
+
+displayParticipants();
 	updateWinnerCountOptions();
 }
 
@@ -112,7 +125,9 @@ function displayParticipants() {
 	list.innerHTML = "";
 	participants.forEach((p, i) => {
 		const li = document.createElement("li");
-		li.innerHTML = `<input type="checkbox" ${p.checked ? "checked" : ""} onchange="toggleCheck(${i})"> ${p.name} (당첨 ${p.count}회)`;
+		li.innerHTML = `<input type="checkbox" ${p.checked ? "checked" : ""} onchange="toggleCheck(${i})"> 
+		<span onclick="editParticipant(${i})" style="cursor:pointer;">${p.name}</span> (당첨 ${p.count}회)
+		<button onclick="deleteParticipant(${i})">삭제</button>`;
 		list.appendChild(li);
 	});
 	updateWinnerCountOptions();
@@ -152,12 +167,11 @@ function calculateProbabilities() {
 	let display = probs.map(p => `${p.name}: ${p.prob}%`);
 	document.getElementById("probabilities").innerHTML = display.map(p => `<div>${p}</div>`).join("");
 	drawResult = { probs: probs, weights: weights, active: filtered };
-	document.getElementById("saveResult").disabled = false;
-	document.getElementById("resetDraw").disabled = false;
 	document.getElementById("result").innerText = "";
 }
 
 function runDraw() {
+	calculateProbabilities();
 	if (!drawResult) return;
 	const { active, weights } = drawResult;
 	let count = parseInt(document.getElementById("winnerCount").value);
@@ -180,29 +194,15 @@ function runDraw() {
 	drawResult.winners = selected;
 	playSound();
 	document.getElementById("result").innerHTML = selected.map(p => `당첨자: ${p.name}`).join("<br>");
-}
 
-function saveResult() {
-	if (!drawResult || !drawResult.winners) return;
 	drawResult.winners.forEach(w => {
 		const p = participants.find(p => p.name === w.name);
 		if (p) p.count++;
 		history.push({ name: w.name, time: new Date().toLocaleString() });
 	});
 	saveParticipants();
-	drawResult = null;
-	document.getElementById("saveResult").disabled = true;
-	document.getElementById("resetDraw").disabled = true;
-	document.getElementById("result").innerText = "";
-	document.getElementById("probabilities").innerText = "";
 	displayLog();
-}
-
-function resetDraw() {
-	drawResult = null;
-	document.getElementById("result").innerText = "";
-	document.getElementById("saveResult").disabled = true;
-	document.getElementById("resetDraw").disabled = true;
+	calculateProbabilities();
 }
 
 function displayLog() {
