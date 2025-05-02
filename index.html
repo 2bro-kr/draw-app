@@ -131,7 +131,6 @@ function displayParticipants() {
 	participants.forEach((p, i) => {
 		const li = document.createElement("li");
 		const count = history.filter(h => h.name === p.name).length;
-		const count = history.filter(h => h.name === p.name).length;
 		li.innerHTML = `<input type="checkbox" ${p.checked ? "checked" : ""} onchange="toggleCheck(${i})"> 
 		<span onclick="editParticipant(${i})" style="cursor:pointer;">${p.name} (${count}회)</span>
 		<button onclick="deleteParticipant(${i})">삭제</button>`;
