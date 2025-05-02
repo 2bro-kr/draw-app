@@ -132,7 +132,7 @@ function displayParticipants() {
 		const li = document.createElement("li");
 		const count = history.filter(h => h.name === p.name).length;
 		li.innerHTML = `<input type="checkbox" ${p.checked ? "checked" : ""} onchange="toggleCheck(${i})"> 
-		<span onclick="editParticipant(${i})" style="cursor:pointer;">${p.name} (${count}회)</span>`
+		<span onclick="editParticipant(${i})" style="cursor:pointer;">${p.name} (${count}회)</span>`;
 		<button onclick="deleteParticipant(${i})">삭제</button>`;
 		list.appendChild(li);
 	});
@@ -163,7 +163,7 @@ function toggleCheck(index) {
 function adjustWinnerCount(delta) {
 	const activeCount = participants.filter(p => p.checked).length;
 	winnerCount = Math.max(1, Math.min(activeCount, winnerCount + delta));
-	document.getElementById("winnerDisplay").textContent = winnerCount;
+	document.getElementById("winnerDisplay").innerHTML = `<strong>${winnerCount}</strong>`;
 }
 
 function calculateProbabilities() {
