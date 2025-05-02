@@ -182,21 +182,54 @@ function runDraw() {
 	const { active, weights } = drawResult;
 	let selected = [];
 	let remaining = active.map((p, i) => ({ ...p, weight: weights[i] }));
-	for (let c = 0; c < winnerCount && remaining.length > 0; c++) {
-		let total = remaining.reduce((sum, p) => sum + p.weight, 0);
-		let r = Math.random() * total;
-		let acc = 0, index = -1;
-		for (let i = 0; i < remaining.length; i++) {
-			acc += remaining[i].weight;
-			if (r < acc) {
-				selected.push(remaining[i]);
-				index = i;
-				break;
+
+	const resultDiv = document.getElementById("result");
+	resultDiv.innerHTML = "";
+
+	// 애니메이션 텍스트 출력 함수
+	function animateText(text, target, callback) {
+		target.innerHTML = "";
+		let i = 0;
+		let interval = setInterval(() => {
+			target.innerHTML = text.slice(0, i + 1);
+			i++;
+			if (i === text.length) {
+				clearInterval(interval);
+				if (callback) callback();
 			}
-		}
-		remaining.splice(index, 1);
+		}, 50);
 	}
-	document.getElementById("result").innerHTML = selected.map(p => `<div class="winner">🎉 ${p.name} 당첨!</div>`).join("");
+
+	resultDiv.innerHTML = '<div class="winner">🔄 추첨 중...</div>';
+
+	setTimeout(() => {
+		for (let c = 0; c < winnerCount && remaining.length > 0; c++) {
+			let total = remaining.reduce((sum, p) => sum + p.weight, 0);
+			let r = Math.random() * total;
+			let acc = 0, index = -1;
+			for (let i = 0; i < remaining.length; i++) {
+				acc += remaining[i].weight;
+				if (r < acc) {
+					selected.push(remaining[i]);
+					index = i;
+					break;
+				}
+			}
+			remaining.splice(index, 1);
+		}
+		resultDiv.innerHTML = "";
+		selected.forEach((p, idx) => {
+			const div = document.createElement("div");
+			div.className = "winner";
+			resultDiv.appendChild(div);
+			setTimeout(() => animateText(`🎉 ${p.name} 당첨!`, div), idx * 800);
+		});
+		selected.forEach(w => history.unshift({ name: w.name, time: new Date().toLocaleString() }));
+		saveParticipants();
+		displayLog();
+		setTimeout(playSound, 400);
+	}, 1000);
+}
 	selected.forEach(w => history.unshift({ name: w.name, time: new Date().toLocaleString() }));
 	saveParticipants();
 	displayLog();
