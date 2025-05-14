@@ -169,11 +169,15 @@ function adjustWinnerCount(delta) {
 function calculateProbabilities() {
 	const active = participants.filter(p => p.checked);
 	const counts = active.map(p => history.filter(h => h.name === p.name).length);
-	let weights = active.map((p, i) => 1 / Math.sqrt(1 + counts[i]));
+	let weights = active.map((p, i) => {
+		const recentCount = history.slice(0, 10).filter(h => h.name === p.name).length;
+		return 1 / Math.sqrt(1 + counts[i] + recentCount);
+	});
 	let total = weights.reduce((a, b) => a + b, 0);
 	let probs = active.map((p, i) => ({ name: p.name, prob: (weights[i] / total * 100).toFixed(2) }));
 	document.getElementById("probabilities").innerHTML = probs.map(p => `<div>${p.name}: ${p.prob}%</div>`).join("");
 	drawResult = { active: active, weights: weights };
+}
 }
 
 function runDraw() {
@@ -182,21 +186,52 @@ function runDraw() {
 	const { active, weights } = drawResult;
 	let selected = [];
 	let remaining = active.map((p, i) => ({ ...p, weight: weights[i] }));
-	for (let c = 0; c < winnerCount && remaining.length > 0; c++) {
-		let total = remaining.reduce((sum, p) => sum + p.weight, 0);
-		let r = Math.random() * total;
-		let acc = 0, index = -1;
-		for (let i = 0; i < remaining.length; i++) {
-			acc += remaining[i].weight;
-			if (r < acc) {
-				selected.push(remaining[i]);
-				index = i;
-				break;
+
+	const resultDiv = document.getElementById("result");
+	resultDiv.innerHTML = "<div class='winner'>🔄 추첨 중...</div>";
+
+	setTimeout(() => {
+		for (let c = 0; c < winnerCount && remaining.length > 0; c++) {
+			let total = remaining.reduce((sum, p) => sum + p.weight, 0);
+			let r = Math.random() * total;
+			let acc = 0, index = -1;
+			for (let i = 0; i < remaining.length; i++) {
+				acc += remaining[i].weight;
+				if (r < acc) {
+					selected.push(remaining[i]);
+					index = i;
+					break;
+				}
 			}
+			remaining.splice(index, 1);
 		}
-		remaining.splice(index, 1);
-	}
-	document.getElementById("result").innerHTML = selected.map(p => `<div class="winner">🎉 ${p.name} 당첨!</div>`).join("");
+
+		resultDiv.innerHTML = "";
+		selected.forEach((p, idx) => {
+			setTimeout(() => {
+				const popup = document.createElement("div");
+				popup.className = "winner";
+				popup.style.position = "fixed";
+				popup.style.top = "40%";
+				popup.style.left = "50%";
+				popup.style.transform = "translate(-50%, -50%)";
+				popup.style.background = "#fff";
+				popup.style.border = "2px solid #e74c3c";
+				popup.style.padding = "20px";
+				popup.style.zIndex = "9999";
+				popup.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.2)";
+				popup.innerHTML = `<strong>🎉 ${p.name} 당첨!</strong>`;
+				document.body.appendChild(popup);
+				setTimeout(() => popup.remove(), 2000);
+			}, idx * 1000);
+		});
+
+		selected.forEach(w => history.unshift({ name: w.name, time: new Date().toLocaleString() }));
+		saveParticipants();
+		displayLog();
+		playSound();
+	}, 1000);
+}
 	selected.forEach(w => history.unshift({ name: w.name, time: new Date().toLocaleString() }));
 	saveParticipants();
 	displayLog();
