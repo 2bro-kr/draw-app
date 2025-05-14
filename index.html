@@ -96,72 +96,83 @@
 <hr>
 <h3>기록</h3>
 <ul id="log"></ul>
-<script>
-let participants = localStorage.getItem("participants") ? JSON.parse(localStorage.getItem("participants")) : [];
-let history = localStorage.getItem("drawHistory") ? JSON.parse(localStorage.getItem("drawHistory")) : [];
-let drawResult = null;
-let winnerCount = 1;
+$1
 
-function playSound() {
-	const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
-	audio.play();
-}
-
-function saveParticipants() {
-	localStorage.setItem("participants", JSON.stringify(participants));
-	localStorage.setItem("drawHistory", JSON.stringify(history));
-	drawResult = null;
-	displayParticipants();
+function toggleCheck(index) {
+	participants[index].checked = !participants[index].checked;
+	saveParticipants();
 	calculateProbabilities();
 }
 
-function addParticipant() {
-	const name = document.getElementById("nameInput").value.trim();
-	if (!name) return;
-	if (!participants.find(p => p.name === name)) {
-		participants.push({ name: name, checked: true });
-		saveParticipants();
-	}
-	document.getElementById("nameInput").value = "";
+function adjustWinnerCount(delta) {
+	const activeCount = participants.filter(p => p.checked).length;
+	winnerCount = Math.max(1, Math.min(activeCount, winnerCount + delta));
+	document.getElementById("winnerDisplay").innerHTML = `<strong>${winnerCount}</strong>`;
 }
 
-function displayParticipants() {
-	const list = document.getElementById("participantList");
-	list.innerHTML = "";
-	participants.forEach((p, i) => {
-		const li = document.createElement("li");
-		const count = history.filter(h => h.name === p.name).length;
-		li.innerHTML = `<input type="checkbox" ${p.checked ? "checked" : ""} onchange="toggleCheck(${i})"> 
-		<span onclick="editParticipant(${i})" style="cursor:pointer;">${p.name} (${count}회)</span>
-		<button onclick="deleteParticipant(${i})">삭제</button>`;
-		list.appendChild(li);
-	});
+function calculateProbabilities() {
+	const active = participants.filter(p => p.checked);
+	const counts = active.map(p => history.filter(h => h.name === p.name).length);
+	let weights = active.map((p, i) => 1 / Math.sqrt(1 + counts[i]));
+	let total = weights.reduce((a, b) => a + b, 0);
+	let probs = active.map((p, i) => ({ name: p.name, prob: (weights[i] / total * 100).toFixed(2) }));
+	document.getElementById("probabilities").innerHTML = probs.map(p => `<div>${p.name}: ${p.prob}%</div>`).join("");
+	drawResult = { active: active, weights: weights };
+}
+
+function runDraw() {
 	calculateProbabilities();
-}
+	if (!drawResult) return;
+	const { active, weights } = drawResult;
+	let selected = [];
+	let remaining = active.map((p, i) => ({ ...p, weight: weights[i] }));
 
-function editParticipant(index) {
-	const newName = prompt("새 이름을 입력하세요:", participants[index].name);
-	if (newName && newName.trim()) {
-		participants[index].name = newName.trim();
-		saveParticipants();
-	}
-}
-function displayLog() {
-	const log = document.getElementById("log");
-	log.innerHTML = "";
-	history.forEach((entry, index) => {
-		const li = document.createElement("li");
-		li.textContent = `${entry.time} - ${entry.name}`;
-		li.innerHTML += ` <button onclick="deleteLog(${index})">삭제</button>`;
-		log.appendChild(li);
-	});
-}
+	document.getElementById("result").innerHTML = "<div class='winner'>🔄 추첨 중...</div>";
 
-function deleteLog(index) {
-	if (confirm("정말 이 기록을 삭제하시겠습니까?")) {
-		history.splice(index, 1);
+	setTimeout(() => {
+		for (let c = 0; c < winnerCount && remaining.length > 0; c++) {
+			let total = remaining.reduce((sum, p) => sum + p.weight, 0);
+			let r = Math.random() * total;
+			let acc = 0, index = -1;
+			for (let i = 0; i < remaining.length; i++) {
+				acc += remaining[i].weight;
+				if (r < acc) {
+					selected.push(remaining[i]);
+					index = i;
+					break;
+				}
+			}
+			remaining.splice(index, 1);
+		}
+
+		document.getElementById("result").innerHTML = "";
+		selected.forEach((p, idx) => {
+			setTimeout(() => {
+				const popup = document.createElement("div");
+				popup.className = "winner";
+				popup.style.position = "fixed";
+				popup.style.top = "40%";
+				popup.style.left = "50%";
+				popup.style.transform = "translate(-50%, -50%)";
+				popup.style.background = "#fff";
+				popup.style.border = "2px solid #e74c3c";
+				popup.style.padding = "20px";
+				popup.style.zIndex = "9999";
+				popup.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.2)";
+				popup.innerHTML = `<strong>🎉 ${p.name} 당첨!</strong>`;
+				document.body.appendChild(popup);
+				setTimeout(() => popup.remove(), 2000);
+			}, idx * 1000);
+		});
+
+		selected.forEach(w => history.unshift({ name: w.name, time: new Date().toLocaleString() }));
 		saveParticipants();
 		displayLog();
+		playSound();
+	}, 1000);
+}
+
+displayLog();
 	}
 }
 
