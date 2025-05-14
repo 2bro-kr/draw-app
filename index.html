@@ -149,7 +149,7 @@ function runDraw() {
 			remaining.splice(index, 1);
 		}
 
-		document.getElementById("result").innerHTML = "";
+		document.getElementById("result").innerHTML = selected.map(p => `<div class="winner">🎉 ${p.name} 당첨!</div>`).join("");
 		selected.forEach((p, idx) => {
 			setTimeout(() => {
 				const popup = document.createElement("div");
@@ -166,6 +166,8 @@ function runDraw() {
 				popup.innerHTML = `<strong>🎉 ${p.name} 당첨!</strong>`;
 				document.body.appendChild(popup);
 				setTimeout(() => popup.remove(), 2000);
+			}, idx * 1000);
+		});
 			}, idx * 1000);
 		});
 
