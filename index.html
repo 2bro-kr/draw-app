@@ -96,7 +96,11 @@
 <hr>
 <h3>기록</h3>
 <ul id="log"></ul>
-$1
+<script>
+let participants = JSON.parse(localStorage.getItem("participants")) || [];
+let history = JSON.parse(localStorage.getItem("drawHistory")) || [];
+let drawResult = null;
+let winnerCount = 1;
 
 function toggleCheck(index) {
 	participants[index].checked = !participants[index].checked;
@@ -173,7 +177,6 @@ function runDraw() {
 }
 
 displayLog();
-	}
 }
 
 displayParticipants();
