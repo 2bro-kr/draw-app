@@ -168,8 +168,6 @@ function runDraw() {
 				setTimeout(() => popup.remove(), 2000);
 			}, idx * 1000);
 		});
-			}, idx * 1000);
-		});
 
 		selected.forEach(w => history.unshift({ name: w.name, time: new Date().toLocaleString() }));
 		saveParticipants();
