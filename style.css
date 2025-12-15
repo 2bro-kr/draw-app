@@ -1,0 +1,1360 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --secondary-color: #64748b;
+    --success-color: #22c55e;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --card-border: #334155;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--bg-color) 0%, #1a1a2e 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.section {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+/* 버튼 스타일 */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #475569;
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.btn-draw {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.3rem;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-draw:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+}
+
+.btn-draw:disabled {
+    background: var(--secondary-color);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 참가자 입력 */
+.add-participant {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.add-participant input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid var(--card-border);
+    border-radius: 8px;
+    background: var(--bg-color);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.add-participant input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* 참가자 목록 */
+.participant-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.participant-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-color);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.participant-item:hover {
+    background: #2d3a4f;
+}
+
+.participant-item.selected {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+    border: 1px solid var(--primary-color);
+}
+
+.participant-checkbox {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.participant-name {
+    font-size: 1rem;
+    margin-right: 10px;
+}
+
+/* 참가자 배지 (면제권, 연속당첨) */
+.participant-badges {
+    display: flex;
+    gap: 6px;
+    margin-right: auto;
+}
+
+.exemption-badge {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    animation: shieldPulse 2s ease-in-out infinite;
+}
+
+@keyframes shieldPulse {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+    }
+}
+
+.streak-badge {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* 면제권 보유자 스타일 */
+.participant-item.has-exemption {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(29, 78, 216, 0.15));
+    border: 1px solid #3b82f6;
+}
+
+.participant-item.has-exemption.selected {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(29, 78, 216, 0.25));
+}
+
+.participant-stats {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 0.85rem;
+}
+
+.win-count {
+    color: var(--warning-color);
+}
+
+.probability {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.probability.high {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.probability.medium {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.probability.low {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.participant-delete {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.participant-delete:hover {
+    opacity: 1;
+}
+
+.participant-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* 추첨 설정 */
+.lottery-settings {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.setting-item label {
+    color: var(--text-secondary);
+}
+
+.setting-item input {
+    width: 80px;
+    padding: 10px;
+    border: 2px solid var(--card-border);
+    border-radius: 8px;
+    background: var(--bg-color);
+    color: var(--text-primary);
+    font-size: 1rem;
+    text-align: center;
+}
+
+.selected-info {
+    color: var(--text-secondary);
+}
+
+.selected-info strong {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+/* 결과 섹션 */
+.result-section {
+    display: none;
+}
+
+.result-section.active {
+    display: block;
+}
+
+.result-container {
+    text-align: center;
+}
+
+/* 슬롯머신 애니메이션 */
+.slot-machine {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    min-height: 80px;
+}
+
+.slot-item {
+    width: 60px;
+    height: 80px;
+    background: var(--bg-color);
+    border: 3px solid var(--primary-color);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    overflow: hidden;
+}
+
+.slot-item.spinning {
+    animation: slotSpin 0.1s linear infinite;
+}
+
+@keyframes slotSpin {
+    0% { transform: translateY(-10px); }
+    50% { transform: translateY(10px); }
+    100% { transform: translateY(-10px); }
+}
+
+/* 당첨자 표시 */
+.winners-display {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.winner-card {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #1a1a2e;
+    padding: 20px 30px;
+    border-radius: 12px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    animation: winnerPop 0.5s ease-out;
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+}
+
+@keyframes winnerPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* 면제 정보 표시 */
+.exempted-info {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.2));
+    border: 1px solid #3b82f6;
+    border-radius: 8px;
+    color: #93c5fd;
+    font-size: 0.95rem;
+}
+
+/* 당첨 이력 */
+.history-controls {
+    margin-bottom: 15px;
+}
+
+.history-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg-color);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.history-date {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.history-winners {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.history-winner-tag {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.history-exempted-tag {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.history-delete {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    font-size: 1.2rem;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.history-delete:hover {
+    opacity: 1;
+}
+
+.empty-message {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 30px;
+}
+
+/* 축하 오버레이 */
+.celebration-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.celebration-overlay.active {
+    display: flex;
+}
+
+.celebration-content {
+    text-align: center;
+    z-index: 10;
+}
+
+.celebration-content h2 {
+    font-size: 3rem;
+    margin-bottom: 30px;
+    animation: bounce 0.5s ease infinite alternate;
+}
+
+@keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+}
+
+.winner-announcement {
+    margin-bottom: 30px;
+}
+
+.winner-announcement .winner-name {
+    display: inline-block;
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #1a1a2e;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 10px;
+    animation: winnerGlow 1s ease-in-out infinite alternate;
+}
+
+@keyframes winnerGlow {
+    from {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+    to {
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 170, 0, 0.5);
+    }
+}
+
+/* 폭죽/컨페티 효과 */
+.confetti-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    animation: confettiFall 3s linear forwards;
+}
+
+@keyframes confettiFall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--card-border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* 오늘의 운세 모드 토글 */
+.fortune-mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1));
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: 12px;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--secondary-color);
+    transition: 0.4s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+.fortune-label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.fortune-hint {
+    font-size: 0.85rem;
+    color: #a855f7;
+    margin-left: auto;
+}
+
+.lucky-badge {
+    background: linear-gradient(135deg, #ffd700, #ff6b6b);
+    color: #1a1a2e;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    animation: luckyPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes luckyPulse {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        transform: scale(1.05);
+    }
+}
+
+/* 다트 게임 오버레이 */
+.dart-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dart-overlay.active {
+    display: flex;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.dart-game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 라운드 표시 */
+.dart-round {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+    z-index: 30;
+    display: none;
+}
+
+.dart-round.active {
+    display: block;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* 다트판 (과녁) */
+.dartboard-wrapper {
+    position: relative;
+    width: 400px;
+    height: 400px;
+}
+
+#dartboardCanvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 8px #334155,
+        0 0 0 12px #1e293b,
+        0 0 60px rgba(99, 102, 241, 0.3);
+}
+
+/* 꽂힌 다트들 컨테이너 */
+.stuck-darts {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* 꽂힌 다트 */
+.stuck-dart {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+    animation: dartStick 0.2s ease-out;
+}
+
+@keyframes dartStick {
+    0% { transform: translate(-50%, -50%) scale(1.5); }
+    50% { transform: translate(-50%, -50%) scale(0.9); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.stuck-dart .dart-pin {
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, #ffd700, #ff6b00);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+.stuck-dart .dart-label {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: #ffd700;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid #ffd700;
+}
+
+/* 날아가는 다트 (정면 3D) */
+.flying-dart {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.1);
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    perspective: 1000px;
+}
+
+.flying-dart.active {
+    opacity: 1;
+}
+
+.dart-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform-style: preserve-3d;
+}
+
+/* 다트 정면 뷰 - 원형 팁 */
+.dart-tip {
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle at 30% 30%, #e0e0e0, #808080);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+/* 다트 몸체 - 정면에서 보면 작은 원 */
+.dart-shaft {
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle at 40% 40%, #4a5568, #1a202c);
+    border-radius: 50%;
+    margin-top: -3px;
+}
+
+/* 다트 날개 - 정면에서 보면 십자 모양 */
+.dart-flight {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin-top: -8px;
+}
+
+.dart-flight::before,
+.dart-flight::after {
+    content: '';
+    position: absolute;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border-radius: 2px;
+}
+
+.dart-flight::before {
+    width: 60px;
+    height: 8px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.dart-flight::after {
+    width: 8px;
+    height: 60px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 당첨자 표시 */
+.dart-winner-display {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 20px 50px;
+    border-radius: 20px;
+    text-align: center;
+    z-index: 25;
+    opacity: 0;
+    pointer-events: none;
+    border: 3px solid #ffd700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+.dart-winner-display.active {
+    animation: winnerPopUp 2s ease-out forwards;
+}
+
+@keyframes winnerPopUp {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.5) translateY(20px);
+    }
+    15% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1.1) translateY(0);
+    }
+    25% {
+        transform: translateX(-50%) scale(1) translateY(0);
+    }
+    85% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.9) translateY(10px);
+    }
+}
+
+.dart-winner-display .winner-round {
+    display: block;
+    font-size: 0.9rem;
+    color: #a855f7;
+    margin-bottom: 8px;
+}
+
+.dart-winner-display .winner-name-display {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* 운세 애니메이션 */
+.fortune-animation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.fortune-animation.active {
+    animation: fortuneAppear 2s ease-out forwards;
+}
+
+@keyframes fortuneAppear {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+}
+
+.fortune-text {
+    font-size: 1.5rem;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    white-space: nowrap;
+}
+
+/* 당첨 통계 섹션 */
+.stats-section {
+    display: block;
+}
+
+.stats-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.chart-wrapper {
+    flex: 1;
+    min-width: 280px;
+    height: 250px;
+    background: var(--bg-color);
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#statsChart {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.stats-summary {
+    flex: 1;
+    min-width: 200px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: var(--bg-color);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.stat-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--card-border);
+    border-radius: 4px;
+    margin: 0 15px;
+    overflow: hidden;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--primary-color);
+    min-width: 50px;
+    text-align: right;
+}
+
+/* 반응형 - 태블릿 */
+@media (max-width: 768px) {
+    body {
+        padding: 12px;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    .section {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .stats-container {
+        flex-direction: column;
+    }
+
+    .chart-wrapper {
+        min-width: 100%;
+        height: 200px;
+    }
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+
+    header {
+        margin-bottom: 16px;
+    }
+
+    header h1 {
+        font-size: 1.6rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .section {
+        padding: 14px;
+        margin-bottom: 12px;
+    }
+
+    .section h2 {
+        font-size: 1.1rem;
+        margin-bottom: 14px;
+    }
+
+    /* 버튼 모바일 최적화 */
+    .btn {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+
+    .btn-draw {
+        padding: 14px;
+        font-size: 1.1rem;
+    }
+
+    /* 참가자 입력 모바일 */
+    .add-participant {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .add-participant input {
+        padding: 12px 14px;
+    }
+
+    .add-participant .btn {
+        width: 100%;
+    }
+
+    /* 참가자 목록 모바일 */
+    .participant-list {
+        max-height: 250px;
+    }
+
+    .participant-item {
+        padding: 10px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .participant-checkbox {
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+    }
+
+    .participant-name {
+        font-size: 0.95rem;
+        flex: 1;
+        min-width: 60px;
+    }
+
+    .participant-badges {
+        order: 3;
+        width: 100%;
+        margin-right: 0;
+        margin-top: 4px;
+    }
+
+    .participant-stats {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+        order: 2;
+    }
+
+    .win-count {
+        font-size: 0.8rem;
+    }
+
+    .probability {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+    }
+
+    .participant-delete {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+    }
+
+    .participant-item {
+        position: relative;
+        padding-right: 35px;
+    }
+
+    .participant-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .participant-actions .btn {
+        width: 100%;
+    }
+
+    /* 추첨 설정 모바일 */
+    .lottery-settings {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .setting-item {
+        justify-content: space-between;
+    }
+
+    .setting-item input {
+        width: 70px;
+    }
+
+    /* 운세 모드 토글 모바일 */
+    .fortune-mode-toggle {
+        flex-wrap: wrap;
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .fortune-label {
+        font-size: 0.95rem;
+    }
+
+    .fortune-hint {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 4px;
+        font-size: 0.8rem;
+    }
+
+    /* 다트 모바일 */
+    .dartboard-wrapper {
+        width: 280px;
+        height: 280px;
+    }
+
+    .dart-winner-display {
+        padding: 15px 30px;
+        bottom: 60px;
+    }
+
+    .dart-winner-display .winner-name-display {
+        font-size: 1.4rem;
+    }
+
+    .fortune-text {
+        font-size: 1.2rem;
+    }
+
+    /* 결과 표시 모바일 */
+    .winner-card {
+        padding: 14px 20px;
+        font-size: 1.1rem;
+    }
+
+    /* 축하 오버레이 모바일 */
+    .celebration-content h2 {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+
+    .winner-announcement .winner-name {
+        font-size: 1.2rem;
+        padding: 10px 20px;
+        margin: 6px;
+    }
+
+    .celebration-content .btn {
+        padding: 12px 30px;
+    }
+
+    /* 이력 모바일 */
+    .history-list {
+        max-height: 250px;
+    }
+
+    .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        position: relative;
+        padding-right: 35px;
+    }
+
+    .history-date {
+        font-size: 0.8rem;
+    }
+
+    .history-winners {
+        gap: 6px;
+    }
+
+    .history-winner-tag,
+    .history-exempted-tag {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+    }
+
+    .history-delete {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    /* 통계 모바일 */
+    .stats-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .chart-wrapper {
+        min-width: 100%;
+        height: 180px;
+        padding: 10px;
+    }
+
+    .stat-item {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+    }
+
+    .stat-name {
+        font-size: 0.9rem;
+        min-width: 80px;
+    }
+
+    .stat-bar {
+        flex: 1;
+        margin: 0 10px;
+        min-width: 50px;
+    }
+
+    .stat-value {
+        font-size: 0.85rem;
+        min-width: 70px;
+    }
+}
+
+/* 아주 작은 화면 (320px 이하) */
+@media (max-width: 360px) {
+    header h1 {
+        font-size: 1.4rem;
+    }
+
+    .dartboard-wrapper {
+        width: 240px;
+        height: 240px;
+    }
+
+    .celebration-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .winner-announcement .winner-name {
+        font-size: 1rem;
+        padding: 8px 16px;
+    }
+}
