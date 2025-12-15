@@ -1,245 +1,140 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>가중치 기반 추첨기</title>
-<style>
-	body {
-		font-family: 'Segoe UI', sans-serif;
-		background: linear-gradient(to right, #fceabb, #f8b500);
-		padding: 15px;
-		max-width: 500px;
-		margin: auto;
-		color: #333;
-		box-sizing: border-box;
-	}
-	h2, h3 {
-		color: #2c3e50;
-		text-align: center;
-	}
-	input[type="text"] {
-		width: 70%;
-		padding: 10px;
-		margin: 5px 0;
-		border: 1px solid #ccc;
-		border-radius: 8px;
-		font-size: 16px;
-	}
-	button {
-		margin: 5px;
-		padding: 10px 14px;
-		border: none;
-		border-radius: 8px;
-		background-color: #ff6f61;
-		color: white;
-		cursor: pointer;
-		font-size: 15px;
-		box-shadow: 1px 1px 4px rgba(0,0,0,0.2);
-	}
-	button:hover {
-		background-color: #e95d4f;
-	}
-	.counter-control {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		gap: 10px;
-		margin-bottom: 10px;
-	}
-	.counter-control button {
-		width: 40px;
-		height: 40px;
-		font-size: 20px;
-	}
-	ul {
-		list-style: none;
-		padding-left: 0;
-	}
-	li {
-		margin-bottom: 6px;
-		font-size: 14px;
-	}
-	label {
-		display: inline-block;
-		margin: 10px 0 5px 0;
-		font-weight: bold;
-	}
-	.winner {
-		font-size: 1.5em;
-		font-weight: bold;
-		color: #c0392b;
-		margin: 10px 0;
-		text-align: center;
-		background-color: #fcecec;
-		border-radius: 10px;
-		padding: 10px;
-	}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 공정한 랜덤 추첨기</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h2>가중치 기반 추첨기</h2>
-<input type="text" id="nameInput" placeholder="이름 입력">
-<button onclick="addParticipant()">추가</button>
-<ul id="participantList"></ul>
-<hr>
-<div class="counter-control">
-	<button onclick="adjustWinnerCount(-1)">-</button>
-  	<span id="winnerDisplay"><strong>1</strong></span>명 당첨자
-	<button onclick="adjustWinnerCount(1)">+</button>
-</div>
-<button onclick="runDraw()">추첨 실행</button>
-<h3>확률</h3>
-<div id="probabilities"></div>
-<h3>결과</h3>
-<div id="result"></div>
-<hr>
-<h3>기록</h3>
-<ul id="log"></ul>
-<script>
-let participants = JSON.parse(localStorage.getItem("participants")) || [];
-let history = JSON.parse(localStorage.getItem("drawHistory")) || [];
-let drawResult = null;
-let winnerCount = 1;
+    <div class="container" id="mainContainer">
+        <header>
+            <h1>🎲 공정한 랜덤 추첨기</h1>
+            <p class="subtitle">당첨 이력 기반 공정 추첨 시스템</p>
+        </header>
 
-function toggleCheck(index) {
-	participants[index].checked = !participants[index].checked;
-	saveParticipants();
-	calculateProbabilities();
-}
+        <div class="main-content">
+            <!-- 참가자 관리 섹션 -->
+            <section class="section participants-section">
+                <h2>👥 참가자 관리</h2>
+                <div class="add-participant">
+                    <input type="text" id="participantName" placeholder="참가자 이름 입력" />
+                    <button id="addBtn" class="btn btn-primary">추가</button>
+                </div>
+                <div class="participant-list" id="participantList">
+                    <!-- 참가자 목록이 여기에 표시됨 -->
+                </div>
+                <div class="participant-actions">
+                    <button id="selectAllBtn" class="btn btn-secondary">전체 선택</button>
+                    <button id="deselectAllBtn" class="btn btn-secondary">전체 해제</button>
+                </div>
+            </section>
 
-function adjustWinnerCount(delta) {
-	const activeCount = participants.filter(p => p.checked).length;
-	winnerCount = Math.max(1, Math.min(activeCount, winnerCount + delta));
-	document.getElementById("winnerDisplay").innerHTML = `<strong>${winnerCount}</strong>`;
-}
+            <!-- 추첨 설정 섹션 -->
+            <section class="section lottery-section">
+                <h2>🎯 추첨 설정</h2>
+                <div class="lottery-settings">
+                    <div class="setting-item">
+                        <label for="winnerCount">당첨자 수</label>
+                        <input type="number" id="winnerCount" min="1" value="1" />
+                    </div>
+                    <div class="selected-info">
+                        <span>선택된 참가자: <strong id="selectedCount">0</strong>명</span>
+                    </div>
+                </div>
+                <!-- 오늘의 운세 모드 토글 -->
+                <div class="fortune-mode-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="fortuneModeToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="fortune-label">🔮 오늘의 운세 모드</span>
+                    <span class="fortune-hint" id="fortuneHint"></span>
+                </div>
+                <button id="drawBtn" class="btn btn-draw">🎰 추첨하기!</button>
+            </section>
 
-function calculateProbabilities() {
-	const active = participants.filter(p => p.checked);
-	const counts = active.map(p => history.filter(h => h.name === p.name).length);
-	let weights = active.map((p, i) => 1 / Math.sqrt(1 + counts[i]));
-	let total = weights.reduce((a, b) => a + b, 0);
-	let probs = active.map((p, i) => ({ name: p.name, prob: (weights[i] / total * 100).toFixed(2) }));
-	document.getElementById("probabilities").innerHTML = probs.map(p => `<div>${p.name}: ${p.prob}%</div>`).join("");
-	drawResult = { active: active, weights: weights };
-}
+            <!-- 당첨 결과 섹션 -->
+            <section class="section result-section" id="resultSection">
+                <h2>🏆 당첨 결과</h2>
+                <div class="result-container" id="resultContainer">
+                    <div class="slot-machine" id="slotMachine">
+                        <!-- 슬롯머신 애니메이션 -->
+                    </div>
+                    <div class="winners-display" id="winnersDisplay">
+                        <!-- 당첨자 표시 -->
+                    </div>
+                </div>
+            </section>
 
-function runDraw() {
-	calculateProbabilities();
-	if (!drawResult) return;
-	const { active, weights } = drawResult;
-	let selected = [];
-	let remaining = active.map((p, i) => ({ ...p, weight: weights[i] }));
+            <!-- 당첨 통계 섹션 -->
+            <section class="section stats-section">
+                <h2>📈 당첨 통계</h2>
+                <div class="stats-container" id="statsContainer">
+                    <div class="chart-wrapper">
+                        <canvas id="statsChart"></canvas>
+                    </div>
+                    <div class="stats-summary" id="statsSummary">
+                        <!-- 통계 요약 -->
+                    </div>
+                </div>
+            </section>
 
-	document.getElementById("result").innerHTML = "<div class='winner'>🔄 추첨 중...</div>";
+            <!-- 당첨 이력 섹션 -->
+            <section class="section history-section">
+                <h2>📊 당첨 이력</h2>
+                <div class="history-controls">
+                    <button id="clearHistoryBtn" class="btn btn-danger">전체 이력 삭제</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- 당첨 이력이 여기에 표시됨 -->
+                </div>
+            </section>
+        </div>
+    </div>
 
-	setTimeout(() => {
-		for (let c = 0; c < winnerCount && remaining.length > 0; c++) {
-			let total = remaining.reduce((sum, p) => sum + p.weight, 0);
-			let r = Math.random() * total;
-			let acc = 0, index = -1;
-			for (let i = 0; i < remaining.length; i++) {
-				acc += remaining[i].weight;
-				if (r < acc) {
-					selected.push(remaining[i]);
-					index = i;
-					break;
-				}
-			}
-			remaining.splice(index, 1);
-		}
+    <!-- 다트 게임 오버레이 -->
+    <div class="dart-overlay" id="dartOverlay">
+        <div class="dart-game-container">
+            <!-- 라운드 표시 -->
+            <div class="dart-round" id="dartRound"></div>
 
-		document.getElementById("result").innerHTML = selected.map(p => `<div class="winner">🎉 ${p.name} 당첨!</div>`).join("");
-		selected.forEach((p, idx) => {
-			setTimeout(() => {
-				const popup = document.createElement("div");
-				popup.className = "winner";
-				popup.style.position = "fixed";
-				popup.style.top = "40%";
-				popup.style.left = "50%";
-				popup.style.transform = "translate(-50%, -50%)";
-				popup.style.background = "#fff";
-				popup.style.border = "2px solid #e74c3c";
-				popup.style.padding = "20px";
-				popup.style.zIndex = "9999";
-				popup.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.2)";
-				popup.innerHTML = `<strong>🎉 ${p.name} 당첨!</strong>`;
-				document.body.appendChild(popup);
-				setTimeout(() => popup.remove(), 2000);
-			}, idx * 1000);
-		});
+            <!-- 다트판 (과녁) -->
+            <div class="dartboard-wrapper">
+                <canvas id="dartboardCanvas"></canvas>
+                <!-- 꽂힌 다트들 -->
+                <div class="stuck-darts" id="stuckDarts"></div>
+            </div>
 
-		selected.forEach(w => history.unshift({ name: w.name, time: new Date().toLocaleString() }));
-		saveParticipants();
-		displayLog();
-		playSound();
-	}, 1000);
-}
+            <!-- 날아가는 다트 -->
+            <div class="flying-dart" id="flyingDart">
+                <div class="dart-body">
+                    <div class="dart-tip"></div>
+                    <div class="dart-shaft"></div>
+                    <div class="dart-flight"></div>
+                </div>
+            </div>
 
-displayLog();
+            <!-- 당첨자 표시 -->
+            <div class="dart-winner-display" id="dartWinnerDisplay"></div>
+        </div>
 
-function displayParticipants() {
-	const list = document.getElementById("participantList");
-	list.innerHTML = "";
-	participants.forEach((p, i) => {
-		const count = history.filter(h => h.name === p.name).length;
-		const li = document.createElement("li");
-		li.innerHTML = `<input type="checkbox" ${p.checked ? "checked" : ""} onchange="toggleCheck(${i})">
-			<span onclick="editParticipant(${i})" style="cursor:pointer;">${p.name} (${count}회)</span>
-			<button onclick="deleteParticipant(${i})">삭제</button>`;
-		list.appendChild(li);
-	});
-	calculateProbabilities();
-}
+        <!-- 운세 애니메이션 -->
+        <div class="fortune-animation" id="fortuneAnimation">
+            <div class="fortune-text" id="fortuneText"></div>
+        </div>
+    </div>
 
-function displayLog() {
-	const log = document.getElementById("log");
-	log.innerHTML = "";
-	history.forEach((entry, index) => {
-		const li = document.createElement("li");
-		li.textContent = `${entry.time} - ${entry.name}`;
-		li.innerHTML += ` <button onclick="deleteLog(${index})">삭제</button>`;
-		log.appendChild(li);
-	});
-}
+    <!-- 당첨 축하 오버레이 -->
+    <div class="celebration-overlay" id="celebrationOverlay">
+        <div class="confetti-container" id="confettiContainer"></div>
+        <div class="celebration-content">
+            <h2>🎉 축하합니다! 🎉</h2>
+            <div class="winner-announcement" id="winnerAnnouncement"></div>
+            <button class="btn btn-primary" id="closeOverlayBtn">확인</button>
+        </div>
+    </div>
 
-function deleteParticipant(index) {
-	if (confirm("정말 삭제하시겠습니까?")) {
-		participants.splice(index, 1);
-		saveParticipants();
-		displayParticipants();
-	}
-}
-
-function deleteLog(index) {
-	if (confirm("이 기록을 삭제하시겠습니까?")) {
-		history.splice(index, 1);
-		saveParticipants();
-		displayLog();
-	}
-}
-
-function editParticipant(index) {
-	const newName = prompt("새 이름을 입력하세요:", participants[index].name);
-	if (newName && newName.trim()) {
-		participants[index].name = newName.trim();
-		saveParticipants();
-		displayParticipants();
-	}
-}
-
-function saveParticipants() {
-	localStorage.setItem("participants", JSON.stringify(participants));
-	localStorage.setItem("drawHistory", JSON.stringify(history));
-}
-
-function playSound() {
-	const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
-	audio.play();
-}
-
-displayParticipants();
-displayLog();
-</script>
+    <script src="app.js"></script>
 </body>
 </html>
